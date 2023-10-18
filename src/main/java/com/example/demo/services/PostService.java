@@ -5,10 +5,12 @@ import com.example.demo.entities.User;
 import com.example.demo.repostory.PostRepository;
 import com.example.demo.requests.PostCreateRequest;
 import com.example.demo.requests.PostUpdate;
+import com.example.demo.response.PostResponse;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class PostService {
@@ -21,10 +23,15 @@ public class PostService {
     this.userService = userService;
   }
 
-  public List<Post> getAllPosts(Optional<Long> userId) {
-    if (userId.isPresent())
-      return postRepository.findByUserId(userId.get());
-    return postRepository.findAll();
+  public List<PostResponse> getAllPosts(Optional<Long> userId) {
+    List <Post> list;
+    if (userId.isPresent()){
+      list =  postRepository.findByUserId(userId.get());
+    }
+      else{
+    list =  postRepository.findAll();
+    }
+      return list.stream().map(p -> new PostResponse(p)).collect(Collectors.toList()) ;
   }
 
   public Post getOnePostById(Long postId) {
@@ -32,7 +39,7 @@ public class PostService {
   }
 
   public Post createOnePost(PostCreateRequest newPostRequest) {
-    User user = userService.getOneUser(newPostRequest.getUserId());
+    User user = userService.getOneUserById(newPostRequest.getUserId());
     if (user == null) {
       return  null;
     }
